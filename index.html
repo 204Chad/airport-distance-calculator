@@ -53,12 +53,13 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Airport Distance Calculator</h1>
-    <input id="airport1" type="text" placeholder="Enter ICAO codes (e.g. CYAV CYST CYGI)" />
-    <button onclick="calculateDistance()">Calculate Distance</button>
-    <p id="result"></p>
-  </div>
+<div class="container">
+  <h1>Airport Distance Calculator</h1>
+  <input id="airport1" type="text" placeholder="Enter ICAO codes (e.g. CYAV CYST CYGI)" />
+  <button onclick="calculateDistance()">Calculate Distance</button>
+  <button onclick="resetInput()">Reset</button>
+  <p id="result"></p>
+</div>
 
   <script>
     let airportData = {};
