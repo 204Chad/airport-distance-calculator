@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Airport Distance Calculator (SM)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #eef2f7;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      width: 360px;
+      text-align: center;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      font-size: 16px;
+    }
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #0078d7;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #005fa3;
+    }
+
+    #result {
+      margin-top: 1.5rem;
+      font-weight: bold;
+      white-space: pre-line;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Airport Distance Calculator</h1>
+    <input id="airport1" type="text" placeholder="Enter ICAO codes (e.g. CYAV CYST CYGI)" />
+    <button onclick="calculateDistance()">Calculate Distance</button>
+    <p id="result"></p>
+  </div>
+
+  <script>
+    let airportData = {};
+
+    // JSON 파일 불러오기
+    fetch('canada_airports_icao.json')
+      .then(res => res.json())
+      .then(dataArray => {
+        dataArray.forEach(item => {
+          if (item.icao_code) {
+            airportData[item.icao_code.toUpperCase()] = {
+              name: item.name,
+              lat: parseFloat(item.latitude_deg),
+              lon: parseFloat(item.longitude_deg)
+            };
+          }
+        });
+      });
+
+    function toRadians(deg) {
+      return deg * Math.PI / 180;
+    }
+
+    function haversineSM(lat1, lon1, lat2, lon2) {
+      const R = 3958.8; 
+      const dLat = toRadians(lat2 - lat1);
+      const dLon = toRadians(lon2 - lon1);
+
+      const a =
+        Math.sin(dLat / 2) ** 2 +
+        Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+        Math.sin(dLon / 2) ** 2;
+
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function calculateDistance() {
+      const input = document.getElementById('airport1').value.toUpperCase().trim();
+      const resultElem = document.getElementById('result');
+
+      if (!input) {
+        resultElem.innerText = '❌ Please enter at least one ICAO airport code.';
+        return;
+      }
+
+      if (Object.keys(airportData).length === 0) {
+        resultElem.innerText = '⏳ Airport data is still loading. Please try again shortly.';
+        return;
+      }
+
+      const codes = input.split(/\s+/);
+      let totalDistance = 0;
+      let details = '';
+
+      for (let i = 0; i < codes.length - 1; i++) {
+        const from = codes[i];
+        const to = codes[i + 1];
+
+        const a1 = airportData[from];
+        const a2 = airportData[to];
+
+        if (!a1 || !a2) {
+          resultElem.innerText = `❌ Airport not found:\n${!a1 ? from : ''} ${!a2 ? to : ''}`;
+          return;
+        }
+
+        const dist = haversineSM(a1.lat, a1.lon, a2.lat, a2.lon);
+        totalDistance += dist;
+    details += `✈️ ${from} → ${to}: ${Math.round(dist)} SM\n`;
+      }
+
+resultElem.innerText = `${details}\n📏 Total Distance: ${Math.round(totalDistance)} SM`;
+    }
+
+
+
+
+
+  </script>
+</body>
+</html>
